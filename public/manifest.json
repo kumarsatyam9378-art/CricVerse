@@ -1,0 +1,23 @@
+{
+  "name": "CricVerse: AI Cricket RPG",
+  "short_name": "CricVerse",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#090919",
+  "theme_color": "#00f2ff",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/1165/1165249.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/1165/1165249.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "description": "Play as your favorite cricket legend in this AI-powered text RPG. Real-time commentary and visuals generated on the fly.",
+  "scope": "/"
+}
