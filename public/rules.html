@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CricVerse | Rulebook</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .rule-card {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary);
+        }
+        .rule-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .points-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+        .points-table td {
+            padding: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .pts-plus { color: var(--accent-success); font-weight: bold; }
+        .pts-minus { color: var(--accent-danger); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <header style="display:flex; align-items:center; gap:10px;">
+            <button onclick="window.history.back()" style="background:none; border:none; color:white; font-size:1.5rem;">←</button>
+            <div class="logo-text" style="font-size:1.5rem; margin:0;">GAME RULES</div>
+        </header>
+
+        <br>
+
+        <div class="rule-card">
+            <div class="rule-title">
+                <span>🎮</span> Gameplay Basics
+            </div>
+            <p style="color:#ccc; font-size:0.9rem; line-height:1.5;">
+                You are role-playing as a legend. Your decisions (Aggressive vs Defensive) determine the outcome.
+                The AI generates the result based on your player's real-life stats + a bit of luck.
+            </p>
+        </div>
+
+        <div class="rule-card" style="border-left-color: var(--accent-success);">
+            <div class="rule-title" style="color:var(--accent-success);">
+                <span>🏆</span> Fantasy Points System
+            </div>
+            <table class="points-table">
+                <tr>
+                    <td>Dot Ball (Defense)</td>
+                    <td class="pts-plus">+2 pts</td>
+                </tr>
+                <tr>
+                    <td>Boundary (4 Runs)</td>
+                    <td class="pts-plus">+10 pts</td>
+                </tr>
+                <tr>
+                    <td>Sixer (6 Runs)</td>
+                    <td class="pts-plus">+20 pts</td>
+                </tr>
+                <tr>
+                    <td>Wicket (Bowling)</td>
+                    <td class="pts-plus">+25 pts</td>
+                </tr>
+                <tr>
+                    <td>Getting Out (Duck)</td>
+                    <td class="pts-minus">-10 pts</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="rule-card" style="border-left-color: var(--secondary);">
+            <div class="rule-title" style="color:var(--secondary);">
+                <span>💰</span> Wallet & Earnings
+            </div>
+            <ul style="color:#ccc; font-size:0.9rem; padding-left:20px; line-height:1.6;">
+                <li>Every match has an <b>Entry Fee</b>.</li>
+                <li>Winnings are credited instantly to your Wallet.</li>
+                <li><b>Withdrawals</b> unlock after reaching ₹500 balance.</li>
+                <li>Use <b>Global Chat</b> to challenge others for high stakes.</li>
+            </ul>
+        </div>
+
+        <button onclick="window.location.href='index.html'" class="cta-btn">
+            I UNDERSTAND, LET'S PLAY!
+        </button>
+
+    </div>
+
+</body>
+</html>
