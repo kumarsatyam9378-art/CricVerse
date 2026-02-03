@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CricVerse | Global Rankings</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .rank-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            transition: 0.3s;
+        }
+        .rank-row:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        .rank-num {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary);
+            width: 40px;
+        }
+        .rank-user {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .rank-score {
+            font-weight: bold;
+            color: var(--accent-success);
+        }
+        .badge {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <header>
+            <div class="logo-text" style="font-size:1.5rem;">HALL OF FAME</div>
+            <div class="tagline">Top Legends of Season 1</div>
+        </header>
+
+        <div class="card" style="border-color: var(--accent-success); background: rgba(0,255,157,0.05);">
+            <div class="rank-row" style="border:none; padding:0;">
+                <div class="rank-num">#42</div>
+                <div class="rank-user">
+                    <img src="https://ui-avatars.com/api/?name=You&background=random" style="width:30px; border-radius:50%;">
+                    <span>YOU</span>
+                    <span class="badge">PRO</span>
+                </div>
+                <div class="rank-score">1,250 PTS</div>
+            </div>
+        </div>
+
+        <div class="card" id="leaderboard-list" style="padding:0;">
+            <div style="padding:20px; text-align:center; color:#666;">Loading Global Data...</div>
+        </div>
+
+        <button onclick="window.location.href='index.html'" class="cta-btn" style="margin-top:20px; background:var(--secondary);">
+            BACK TO LOBBY
+        </button>
+
+    </div>
+
+    <script>
+        // MOCK DATA GENERATOR
+        const mockPlayers = [
+            { name: "KingKohli_18", score: 9850, badge: "ELITE" },
+            { name: "RohitHitman", score: 8740, badge: "LEGEND" },
+            { name: "Thala7", score: 8200, badge: "VETERAN" },
+            { name: "BoomBoom", score: 7500, badge: "PRO" },
+            { name: "Gill_Prince", score: 6900, badge: "ROOKIE" },
+            { name: "Pant_Spidey", score: 6200, badge: "PRO" },
+            { name: "Satyam_Dev", score: 5000, badge: "ADMIN" },
+        ];
+
+        const listContainer = document.getElementById('leaderboard-list');
+
+        setTimeout(() => {
+            listContainer.innerHTML = '';
+            
+            mockPlayers.forEach((p, index) => {
+                const row = document.createElement('div');
+                row.className = 'rank-row';
+                
+                // Colors for Top 3
+                let rankColor = '#fff';
+                if(index === 0) rankColor = '#ffd700'; // Gold
+                if(index === 1) rankColor = '#c0c0c0'; // Silver
+                if(index === 2) rankColor = '#cd7f32'; // Bronze
+
+                row.innerHTML = `
+                    <div class="rank-num" style="color:${rankColor}">#${index + 1}</div>
+                    <div class="rank-user">
+                        <img src="https://ui-avatars.com/api/?name=${p.name}&background=random" style="width:30px; border-radius:50%;">
+                        <span>${p.name}</span>
+                        ${index < 3 ? '<span style="font-size:1rem">🔥</span>' : ''}
+                    </div>
+                    <div class="rank-score">${p.score.toLocaleString()}</div>
+                `;
+                listContainer.appendChild(row);
+            });
+        }, 1000); // Simulate Loading Delay
+    </script>
+</body>
+</html>
