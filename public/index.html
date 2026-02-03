@@ -7,23 +7,38 @@
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#00f2ff">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1165/1165249.png">
+
     <link rel="stylesheet" href="style.css">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://pollinations.ai">
 
     <style>
+        /* SPLASH SCREEN CSS */
         #splash-screen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: #090919;
             z-index: 9999;
-            display: flex; justify-content: center; align-items: center; text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
             transition: opacity 0.5s;
         }
         .splash-content { animation: fadeUp 1s ease-out; }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* HIDDEN UTILITY */
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -40,64 +55,85 @@
     </div>
 
     <div class="app-container">
+        
         <header class="fade-in" style="position:relative;">
             <div class="logo-text">CricVerse</div>
             <div class="tagline">Real Match. Real Roles. Pure Experience.</div>
+            
             <a href="settings.html" style="position:absolute; top:5px; right:0; font-size:1.5rem; text-decoration:none;">⚙️</a>
         </header>
 
         <div id="login-section" class="card fade-in">
             <h2 class="section-title">Identity Verification</h2>
-            <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:20px;">Connect to save your career stats and unlock rewards.</p>
+            <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:20px;">
+                Connect to the Neural Network to save your career stats and unlock ranked matches.
+            </p>
+            
             <button id="google-login-btn" class="cta-btn" style="background:#fff; color:#333; display:flex; align-items:center; justify-content:center; gap:10px;">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="18">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20">
                 Sign In with Google
             </button>
+            <p style="font-size:0.7rem; color:#666; margin-top:15px;">By continuing, you accept the Protocol Terms.</p>
         </div>
 
         <div id="lobby-section" class="hidden fade-in">
-            <div class="card" style="padding:10px 15px; display:flex; justify-content:space-between; align-items:center;">
+            
+            <div class="card" style="padding:10px 15px; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                 <div style="display:flex; align-items:center; gap:10px;">
-                    <img id="user-avatar" src="" style="width:30px; height:30px; border-radius:50%; border:1px solid var(--primary); display:none; cursor:pointer;" onclick="window.location.href='profile.html'">
+                    <img id="user-avatar" src="" style="width:35px; height:35px; border-radius:50%; border:1px solid var(--primary); display:none; cursor:pointer;" onclick="window.location.href='profile.html'">
                     <span id="user-name" style="font-weight:bold; color:var(--primary);">Guest</span>
                 </div>
                 <div style="font-size:0.8rem; color:var(--accent-success);">● Online</div>
             </div>
-            <div class="section-title">SELECT PLAYER</div>
-            <div id="roster-grid" class="player-grid"></div>
-            <br>
-            <div style="position:sticky; bottom:20px; z-index:100;">
-                <button id="start-game-btn" class="cta-btn" disabled>Select Player First</button>
+
+            <div class="section-title">SELECT YOUR LEGEND</div>
+            
+            <div id="player-list" class="player-grid">
+                </div>
+
+            <div style="position:sticky; bottom:20px; z-index:100; margin-top:30px;">
+                <button id="start-btn" class="cta-btn" disabled>Select Player First</button>
             </div>
         </div>
+
+    </div>
+
+    <div style="position:fixed; bottom:20px; right:20px; z-index:100;">
+        <button onclick="window.location.href='spin.html'" style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(45deg, #ff0055, #ffd700); border: 2px solid white; box-shadow: 0 0 20px rgba(255, 215, 0, 0.6); font-size: 2rem; cursor: pointer; animation: float 3s infinite ease-in-out;">🎁</button>
     </div>
 
     <script type="module">
         import { players } from './data.js';
         import { Auth } from './auth.js';
 
-        // Splash Logic
+        // --- SPLASH LOGIC ---
         window.addEventListener('load', () => {
             const bar = document.getElementById('splash-bar');
             const screen = document.getElementById('splash-screen');
             setTimeout(() => { bar.style.width = "100%"; }, 100);
-            setTimeout(() => { screen.style.opacity = '0'; setTimeout(() => { screen.style.display = 'none'; }, 500); }, 2500);
+            setTimeout(() => {
+                screen.style.opacity = '0';
+                setTimeout(() => { screen.style.display = 'none'; }, 500);
+            }, 2500);
         });
 
-        // Service Worker
+        // --- PWA SERVICE WORKER ---
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js'); });
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(reg => console.log('PWA Active'));
+            });
         }
 
-        const loginBtn = document.getElementById('google-login-btn');
+        // --- AUTH & LOBBY LOGIC ---
         const loginSection = document.getElementById('login-section');
         const lobbySection = document.getElementById('lobby-section');
-        const rosterGrid = document.getElementById('roster-grid');
-        const startBtn = document.getElementById('start-game-btn');
+        const list = document.getElementById('player-list');
+        const startBtn = document.getElementById('start-btn');
+        const loginBtn = document.getElementById('google-login-btn');
 
-        let selectedPlayerId = null;
+        let selectedPlayer = null;
 
-        // Login Handler
+        // 1. Google Login Handler
         loginBtn.onclick = async () => {
             loginBtn.innerHTML = "Connecting...";
             try {
@@ -105,41 +141,54 @@
                 if (user) {
                     loginSection.classList.add('hidden');
                     lobbySection.classList.remove('hidden');
+                    
                     document.getElementById('user-name').innerText = user.name;
                     document.getElementById('user-avatar').src = user.photo;
                     document.getElementById('user-avatar').style.display = "block";
+                    
                     localStorage.setItem('CV_AuthToken', user.token);
-                    renderRoster();
+                    renderPlayers();
                 }
-            } catch (e) {
-                alert("Login Error. Check Console.");
+            } catch (err) {
+                alert("Login Failed. Please try again.");
                 loginBtn.innerHTML = "Sign In with Google";
             }
         };
 
-        function renderRoster() {
-            rosterGrid.innerHTML = '';
+        // 2. Render Players from data.js
+        function renderPlayers() {
+            list.innerHTML = '';
             players.forEach(p => {
                 const card = document.createElement('div');
                 card.className = 'player-card';
-                card.id = `card-${p.id}`;
+                card.innerHTML = `
+                    <div class="p-avatar">${p.avatar}</div>
+                    <div class="p-name">${p.name}</div>
+                    <div class="p-role">${p.role.toUpperCase()}</div>
+                    <div class="p-price">Entry: ₹${p.price}</div>
+                `;
                 card.onclick = () => {
-                    selectedPlayerId = p.id;
-                    document.querySelectorAll('.player-card').forEach(c => c.classList.remove('selected'));
+                    selectedPlayer = p;
+                    document.querySelectorAll('.player-card').forEach(el => el.classList.remove('selected'));
                     card.classList.add('selected');
+                    startBtn.innerText = `PAY ₹${p.price} & ENTER`;
                     startBtn.disabled = false;
-                    startBtn.innerHTML = `PAY ₹${p.price} & ENTER`;
+                    startBtn.style.background = 'var(--accent-success)';
                 };
-                card.innerHTML = `<div class="p-avatar">${p.avatar}</div><span class="p-name">${p.name}</span><span class="p-role">${p.role}</span>`;
-                rosterGrid.appendChild(card);
+                list.appendChild(card);
             });
         }
 
+        // 3. Start Match Handler
         startBtn.onclick = () => {
-            const pData = players.find(p => p.id === selectedPlayerId);
-            localStorage.setItem('CV_CurrentPlayer', JSON.stringify(pData));
-            window.location.href = "game.html";
+            if (!selectedPlayer) return;
+            startBtn.innerHTML = "INITIALIZING STADIUM...";
+            localStorage.setItem('CV_CurrentPlayer', JSON.stringify(selectedPlayer));
+            setTimeout(() => {
+                window.location.href = 'game.html';
+            }, 800);
         };
+
     </script>
 </body>
 </html>
