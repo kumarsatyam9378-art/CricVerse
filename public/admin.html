@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CricVerse | GOD MODE</title>
+    <style>
+        :root { --bg: #000; --term: #0f0; --err: #f00; --warn: #ff0; }
+        body { background: var(--bg); color: var(--term); font-family: 'Courier New', monospace; padding: 20px; margin: 0; }
+        
+        /* LAYOUT */
+        .admin-grid { display: grid; grid-template-columns: 250px 1fr; gap: 20px; height: 90vh; }
+        .sidebar { border-right: 1px solid #333; padding-right: 20px; }
+        .main-content { overflow-y: auto; }
+
+        /* COMPONENTS */
+        .stat-card { border: 1px solid #333; padding: 15px; margin-bottom: 20px; background: rgba(0,255,0,0.05); }
+        .stat-value { font-size: 2rem; font-weight: bold; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { text-align: left; padding: 10px; border-bottom: 1px solid #333; }
+        th { color: #888; text-transform: uppercase; font-size: 0.8rem; }
+        
+        .btn { padding: 5px 10px; border: 1px solid var(--term); background: transparent; color: var(--term); cursor: pointer; font-family: inherit; }
+        .btn:hover { background: var(--term); color: black; }
+        .btn-danger { border-color: var(--err); color: var(--err); }
+        .btn-danger:hover { background: var(--err); color: white; }
+
+        /* LOGS */
+        .terminal-log { background: #111; padding: 10px; height: 150px; overflow-y: auto; font-size: 0.8rem; border: 1px solid #333; margin-top: 20px; }
+        .log-entry { margin-bottom: 5px; }
+        .log-time { color: #666; margin-right: 10px; }
+
+        /* BLINK ANIMATION */
+        .blink { animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+    </style>
+</head>
+<body>
+
+    <div class="admin-grid">
+        <div class="sidebar">
+            <h2 style="margin-top:0;">SYSTEM_ADMIN</h2>
+            <div style="font-size:0.8rem; color:#666; margin-bottom:20px;">v.2.0.4-ALPHA</div>
+            
+            <div style="margin-bottom:10px;">> DASHBOARD</div>
+            <div style="margin-bottom:10px; opacity:0.5;">> USERS</div>
+            <div style="margin-bottom:10px; opacity:0.5;">> PAYMENTS</div>
+            <div style="margin-bottom:10px; opacity:0.5;">> SETTINGS</div>
+            
+            <br><br>
+            <button class="btn btn-danger" onclick="window.location.href='index.html'">LOGOUT</button>
+        </div>
+
+        <div class="main-content">
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:10px;">
+                <span>SERVER STATUS: <span style="color:var(--term)">ONLINE</span> <span class="blink">●</span></span>
+                <span>CPU: 12% | RAM: 405MB</span>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:20px; margin-top:20px;">
+                <div class="stat-card">
+                    <div>ACTIVE USERS</div>
+                    <div class="stat-value" id="active-count">0</div>
+                </div>
+                <div class="stat-card">
+                    <div>TOTAL REVENUE</div>
+                    <div class="stat-value">₹ <span id="revenue-count">0</span></div>
+                </div>
+                <div class="stat-card">
+                    <div>SERVER UPTIME</div>
+                    <div class="stat-value" style="font-size:1.5rem;">04:20:59</div>
+                </div>
+            </div>
+
+            <h3>> USER_DATABASE</h3>
+            <div style="display:flex; gap:10px;">
+                <input type="text" placeholder="Search UserID..." style="background:transparent; border:1px solid #333; color:white; padding:5px; flex-grow:1;">
+                <button class="btn">SEARCH</button>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>USER</th>
+                        <th>ROLE</th>
+                        <th>STATUS</th>
+                        <th>ACTION</th>
+                    </tr>
+                </thead>
+                <tbody id="user-table">
+                    </tbody>
+            </table>
+
+            <h3>> SYSTEM_LOGS</h3>
+            <div class="terminal-log" id="sys-log">
+                </div>
+
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>
