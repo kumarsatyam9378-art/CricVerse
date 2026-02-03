@@ -5,18 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CricVerse | Select Your Legend</title>
     
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#00f2ff">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1165/1165249.png">
+
     <link rel="stylesheet" href="style.css">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://pollinations.ai">
+
+    <style>
+        /* SPLASH SCREEN CSS */
+        #splash-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #090919;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            transition: opacity 0.5s;
+        }
+        .splash-content { animation: fadeUp 1s ease-out; }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
 <body>
 
+    <div id="splash-screen">
+        <div class="splash-content">
+            <div style="font-size:4rem; animation: bounce 2s infinite;">🏏</div>
+            <h1 style="color:#00f2ff; text-transform:uppercase; letter-spacing:4px; margin:10px 0;">CricVerse</h1>
+            <p style="color:#aaa; font-size:0.8rem;">POWERED BY AI NEURAL ENGINE</p>
+            <div style="width:200px; height:4px; background:#333; margin:20px auto; border-radius:2px; overflow:hidden;">
+                <div id="splash-bar" style="width:0%; height:100%; background:#00ff9d; transition:width 2.5s linear;"></div>
+            </div>
+        </div>
+    </div>
+
     <div class="app-container">
         
-        <header class="fade-in">
+        <header class="fade-in" style="position:relative;">
             <div class="logo-text">CricVerse</div>
             <div class="tagline">Real Match. Real Roles. Pure Experience.</div>
+            
+            <a href="settings.html" style="position:absolute; top:5px; right:0; font-size:1.5rem; text-decoration:none; color:white;">⚙️</a>
         </header>
 
         <div id="login-section" class="card fade-in">
@@ -38,10 +79,9 @@
         </div>
 
         <div id="lobby-section" class="hidden fade-in">
-            
             <div class="card" style="padding:10px 15px; display:flex; justify-content:space-between; align-items:center;">
                 <div style="display:flex; align-items:center; gap:10px;">
-                    <img id="user-avatar" src="" style="width:30px; height:30px; border-radius:50%; border:1px solid var(--primary); display:none;">
+                    <img id="user-avatar" src="" style="width:30px; height:30px; border-radius:50%; border:1px solid var(--primary); display:none; cursor:pointer;" onclick="window.location.href='profile.html'">
                     <span id="user-name" style="font-weight:bold; color:var(--primary);">Guest</span>
                 </div>
                 <div style="font-size:0.8rem; color:var(--accent-success);">● Online</div>
@@ -52,49 +92,67 @@
                 <span style="font-size:0.7rem; margin-left:auto; color:var(--text-muted);">Season 1</span>
             </div>
 
-            <div id="roster-grid" class="player-grid">
-                </div>
-
+            <div id="roster-grid" class="player-grid"></div>
             <br>
 
             <div style="position:sticky; bottom:20px; z-index:100;">
-                <button id="start-game-btn" class="cta-btn" disabled>
-                    Select Player First
-                </button>
+                <button id="start-game-btn" class="cta-btn" disabled>Select Player First</button>
             </div>
         </div>
 
+        <div style="text-align:center; margin-top:20px; font-size:0.7rem; color:#666;">
+            <a href="rules.html" style="color:#888; text-decoration:none;">How to Play</a> • 
+            <a href="legal.html" style="color:#888; text-decoration:none;">Privacy Policy</a>
+        </div>
+    </div>
+
+    <div style="position:fixed; bottom:20px; right:20px; z-index:100;">
+        <button onclick="window.location.href='spin.html'" style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(45deg, #ff0055, #ffd700); border: 2px solid white; box-shadow: 0 0 20px rgba(255, 215, 0, 0.6); font-size: 2rem; cursor: pointer; animation: float 3s infinite ease-in-out;">🎁</button>
     </div>
 
     <script type="module">
         import { players } from './data.js';
 
-        // --- DOM ELEMENTS ---
+        // SPLASH LOGIC
+        window.addEventListener('load', () => {
+            const bar = document.getElementById('splash-bar');
+            const screen = document.getElementById('splash-screen');
+            setTimeout(() => { bar.style.width = "100%"; }, 100);
+            setTimeout(() => {
+                screen.style.opacity = '0';
+                setTimeout(() => { screen.style.display = 'none'; }, 500);
+            }, 2500);
+        });
+
+        // SERVICE WORKER REGISTRATION
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((reg) => console.log('PWA: Service Worker Registered'))
+                    .catch((err) => console.log('PWA: Registration Failed', err));
+            });
+        }
+
+        // --- GAME LOBBY LOGIC ---
         const loginSection = document.getElementById('login-section');
         const lobbySection = document.getElementById('lobby-section');
         const rosterGrid = document.getElementById('roster-grid');
         const startBtn = document.getElementById('start-game-btn');
         const loginBtn = document.getElementById('google-login-btn');
 
-        // --- STATE MANAGEMENT ---
         let selectedPlayerId = null;
 
-        // --- 1. INITIALIZATION ---
         function initLobby() {
             renderRoster();
-            checkAuth();
         }
 
-        // --- 2. RENDER PLAYERS ---
         function renderRoster() {
-            rosterGrid.innerHTML = ''; // Clear existing
-            
+            rosterGrid.innerHTML = '';
             players.forEach(player => {
                 const card = document.createElement('div');
                 card.className = 'player-card';
                 card.id = `card-${player.id}`;
                 card.onclick = () => selectPlayer(player.id);
-
                 card.innerHTML = `
                     <div class="p-avatar">${player.avatar}</div>
                     <span class="p-name">${player.name}</span>
@@ -105,60 +163,37 @@
             });
         }
 
-        // --- 3. SELECTION LOGIC ---
         window.selectPlayer = (id) => {
             selectedPlayerId = id;
-            
-            // UI Updates
             document.querySelectorAll('.player-card').forEach(c => c.classList.remove('selected'));
             document.getElementById(`card-${id}`).classList.add('selected');
-            
-            // Find Price
             const pData = players.find(p => p.id === id);
-            
-            // Button Update
             startBtn.disabled = false;
             startBtn.innerHTML = `PAY ₹${pData.price} & ENTER`;
             startBtn.style.background = 'var(--accent-success)';
         };
 
-        // --- 4. AUTH SIMULATION (Replace with Firebase) ---
         loginBtn.onclick = () => {
-            // Simulating a successful login
             loginBtn.innerHTML = "Authenticating...";
             setTimeout(() => {
                 loginSection.classList.add('hidden');
                 lobbySection.classList.remove('hidden');
                 document.getElementById('user-name').innerText = "Satyam Player";
-                document.getElementById('user-avatar').src = "https://ui-avatars.com/api/?name=Satyam&background=random";
-                document.getElementById('user-avatar').style.display = "block";
+                const avatar = document.getElementById('user-avatar');
+                avatar.src = "https://ui-avatars.com/api/?name=Satyam&background=random";
+                avatar.style.display = "block";
             }, 1000);
         };
 
-        function checkAuth() {
-            // Check if already logged in (Local Storage)
-            // For now, we show login screen first
-        }
-
-        // --- 5. GAME START NAVIGATION ---
         startBtn.onclick = () => {
             if(!selectedPlayerId) return;
-
             const pData = players.find(p => p.id === selectedPlayerId);
-            
-            // Save Session Data
             localStorage.setItem('CV_CurrentPlayer', JSON.stringify(pData));
-            
-            // Animation before redirect
             startBtn.innerHTML = "INITIALIZING STADIUM...";
-            setTimeout(() => {
-                window.location.href = "game.html";
-            }, 800);
+            setTimeout(() => { window.location.href = "game.html"; }, 800);
         };
 
-        // Run Init
         initLobby();
-
     </script>
 </body>
 </html>
