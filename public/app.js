@@ -1,11 +1,13 @@
 /* =========================================
-   MAIN APPLICATION LOGIC (Production V1.0)
+   MAIN APPLICATION LOGIC (Production V1.1)
    Orchestrates: UI Events, Game State, AI Calls
-   Connects: game.html <-> data.js <-> ai.js
+   Connects: game.html <-> data.js <-> ai.js <-> sound.js
    ========================================= */
 
 import { controls, gameMessages } from './data.js';
 import { GameEngine } from './ai.js';
+import { SoundEngine } from './sound.js'; // <-- ADDED
+import { Format } from './utils.js';      // <-- ADDED
 
 // --- GLOBAL STATE ---
 const State = {
@@ -36,7 +38,6 @@ const UI = {
    1. INITIALIZATION & VALIDATION
    ========================================= */
 function initGame() {
-    // A. Check Session
     const sessionRaw = localStorage.getItem('CV_CurrentPlayer');
     
     if (!sessionRaw) {
@@ -48,23 +49,20 @@ function initGame() {
     try {
         State.user = JSON.parse(sessionRaw);
     } catch (e) {
-        console.error("Corrupt Session Data", e);
         window.location.href = 'index.html';
         return;
     }
 
-    // B. Setup HUD
     setupHUD();
-
-    // C. Generate Controls
     renderControls();
 
-    // D. Initial System Message
+    // STARTING SOUNDS
+    SoundEngine.playSFX('click');
     logToFeed(gameMessages.loading, 'SYSTEM');
     
-    // Simulate initial satellite connection
     setTimeout(() => {
-        logToFeed(`Connected to stadium. ${State.user.name} is walking out to the middle.`, 'SYSTEM');
+        logToFeed(`Connected to stadium. ${State.user.name} is ready!`, 'SYSTEM');
+        SoundEngine.playSFX('cheer'); // Crowd welcoming player
         UI.status.innerText = "Live Stream Active";
         UI.status.style.color = "#00ff9d";
     }, 1500);
@@ -81,44 +79,31 @@ function setupHUD() {
 }
 
 function renderControls() {
-    UI.controlsGrid.innerHTML = ''; // Clear loaders
-
-    // Get specific buttons for the user's role (Batter/Bowler)
-    const roleActions = controls[State.user.role] || controls['Batter']; // Fallback
+    UI.controlsGrid.innerHTML = ''; 
+    const roleActions = controls[State.user.role] || controls['Batter'];
 
     roleActions.forEach(action => {
         const btn = document.createElement('button');
-        
-        // Style based on risk/type
         btn.className = `action-btn btn-style-${action.style}`;
-        
-        // Content
         btn.innerHTML = `
             <span>${action.label}</span>
             <div style="font-size:0.6rem; opacity:0.8; margin-top:2px;">
                 Risk: ${action.risk}%
             </div>
         `;
-
-        // Event Listener
         btn.onclick = () => handlePlayerMove(action);
-
         UI.controlsGrid.appendChild(btn);
     });
 }
 
 function updateScore(points) {
     State.score += points;
-    // Prevent negative score
     if (State.score < 0) State.score = 0;
-    
-    // Animate counter (simple implementation)
     UI.hudScore.innerText = State.score;
 }
 
 function logToFeed(message, sender = 'COMMENTARY') {
-    const time = new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit' });
-    
+    const time = Format.timestamp(); // Using Helper
     const entry = document.createElement('div');
     entry.style.marginBottom = "10px";
     entry.innerHTML = `
@@ -126,36 +111,34 @@ function logToFeed(message, sender = 'COMMENTARY') {
         <b style="color:${sender === 'SYSTEM' ? 'var(--accent-success)' : 'var(--primary)'}">${sender}:</b> 
         <span>${message}</span>
     `;
-    
     UI.feed.appendChild(entry);
-    
-    // Auto Scroll to bottom
     UI.feed.scrollTop = UI.feed.scrollHeight;
 }
 
 /* =========================================
-   3. CORE GAMEPLAY LOGIC
+   3. CORE GAMEPLAY LOGIC (SOUND & AI INTEGRATED)
    ========================================= */
 async function handlePlayerMove(actionData) {
-    if (State.isProcessing) return; // Prevent spam
+    if (State.isProcessing) return; 
     
-    // 1. LOCK UI
+    // 1. SOUND & LOCK
+    SoundEngine.playSFX('click'); 
     setLoadingState(true);
     State.turnCount++;
 
-    // 2. UPDATE FEED (Immediate Feedback)
+    // 2. IMMEDIATE FEEDBACK
     logToFeed(`Attempting ${actionData.label}...`, 'PLAYER');
     UI.status.innerText = "AI Processing...";
-    UI.status.style.color = "yellow";
 
     try {
         // 3. CALL AI ENGINE
         const response = await GameEngine.processTurn(State.user, actionData);
 
-        // 4. HANDLE TEXT RESULT
+        // 4. AI VOICE & COMMENTARY
         logToFeed(response.commentary);
+        SoundEngine.speakCommentary(response.commentary); // AI Voice
 
-        // 5. HANDLE VISUAL RESULT
+        // 5. HANDLE VISUALS
         if (response.visual) {
             UI.visualImg.onload = () => {
                 UI.visualImg.style.display = 'block';
@@ -164,30 +147,33 @@ async function handlePlayerMove(actionData) {
             UI.visualImg.src = response.visual;
         }
 
-        // 6. UPDATE GAME STATS
+        // 6. UPDATE STATS & PLAY SOUNDS
         updateScore(response.statsUpdate);
 
-        // 7. FLASH RESULT MESSAGE
+        if (response.statsUpdate > 0) {
+            SoundEngine.playSFX('batHit'); // Success sound
+            if (response.statsUpdate >= 4) SoundEngine.playSFX('cheer');
+        } else if (response.result.includes("Out")) {
+            SoundEngine.playSFX('wickets'); // Out sound
+        }
+
+        // 7. STATUS COLOR
         UI.status.innerText = `Result: ${response.result}`;
-        UI.status.style.color = response.result.includes("Success") ? "#00ff9d" : "#ff0055";
+        UI.status.style.color = response.statsUpdate > 0 ? "#00ff9d" : "#ff0055";
 
     } catch (error) {
-        console.error("Turn Error:", error);
         logToFeed("Connection interrupted. Please retry.", "SYSTEM");
     } finally {
-        // 8. UNLOCK UI
         setLoadingState(false);
     }
 }
 
 function setLoadingState(isLoading) {
     State.isProcessing = isLoading;
-    
     const btns = document.querySelectorAll('.action-btn');
     btns.forEach(b => {
         b.disabled = isLoading;
         b.style.opacity = isLoading ? '0.5' : '1';
-        b.style.cursor = isLoading ? 'not-allowed' : 'pointer';
     });
 
     if (isLoading) {
@@ -200,11 +186,11 @@ function setLoadingState(isLoading) {
    4. EVENT LISTENERS
    ========================================= */
 UI.exitBtn.onclick = () => {
+    SoundEngine.playSFX('click');
     if (confirm("Leave the stadium? Your current score will be lost.")) {
         localStorage.removeItem('CV_CurrentPlayer');
         window.location.href = 'index.html';
     }
 };
 
-// Start the Game
 window.onload = initGame;
