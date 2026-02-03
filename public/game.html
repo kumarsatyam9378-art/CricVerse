@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CricVerse | Live</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="card">
+        <h2 id="hud-player">...</h2>
+        <span id="hud-role" style="color:var(--accent)">Loading...</span>
+    </header>
+
+    <div class="card">
+        <img id="visual-feed">
+        <div id="ai-feed" class="ai-text">> Waiting for your move...</div>
+    </div>
+
+    <div id="controls-area" class="card">
+        <h3>Make your Move</h3>
+        <div id="btn-container" class="control-grid"></div>
+    </div>
+
+    <button onclick="window.location.href='index.html'" style="background:#333; color:#aaa; border:none; margin-top:20px;">Exit Match</button>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
