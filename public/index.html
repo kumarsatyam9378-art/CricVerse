@@ -15,7 +15,6 @@
     <link rel="preconnect" href="https://pollinations.ai">
 
     <style>
-        /* SPLASH SCREEN CSS */
         #splash-screen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -36,8 +35,6 @@
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
-        /* HIDDEN UTILITY */
         .hidden { display: none !important; }
     </style>
 </head>
@@ -59,21 +56,19 @@
         <header class="fade-in" style="position:relative;">
             <div class="logo-text">CricVerse</div>
             <div class="tagline">Real Match. Real Roles. Pure Experience.</div>
-            
             <a href="settings.html" style="position:absolute; top:5px; right:0; font-size:1.5rem; text-decoration:none;">⚙️</a>
         </header>
 
         <div id="login-section" class="card fade-in">
             <h2 class="section-title">Identity Verification</h2>
             <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:20px;">
-                Connect to the Neural Network to save your career stats and unlock ranked matches.
+                Connect to save your career stats and unlock ranked matches.
             </p>
             
             <button id="google-login-btn" class="cta-btn" style="background:#fff; color:#333; display:flex; align-items:center; justify-content:center; gap:10px;">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20">
                 Sign In with Google
             </button>
-            <p style="font-size:0.7rem; color:#666; margin-top:15px;">By continuing, you accept the Protocol Terms.</p>
         </div>
 
         <div id="lobby-section" class="hidden fade-in">
@@ -83,19 +78,20 @@
                     <img id="user-avatar" src="" style="width:35px; height:35px; border-radius:50%; border:1px solid var(--primary); display:none; cursor:pointer;" onclick="window.location.href='profile.html'">
                     <span id="user-name" style="font-weight:bold; color:var(--primary);">Guest</span>
                 </div>
-                <div style="font-size:0.8rem; color:var(--accent-success);">● Online</div>
+                
+                <div onclick="window.location.href='wallet.html'" style="background:rgba(0,255,157,0.1); padding:5px 12px; border-radius:20px; color:#00ff9d; font-size:0.85rem; cursor:pointer; border:1px solid #00ff9d; display:flex; align-items:center; gap:5px;">
+                    ₹ <span id="lobby-balance">0</span> <span style="font-weight:bold; font-size:1rem;">+</span>
+                </div>
             </div>
 
             <div class="section-title">SELECT YOUR LEGEND</div>
             
-            <div id="player-list" class="player-grid">
-                </div>
+            <div id="player-list" class="player-grid"></div>
 
             <div style="position:sticky; bottom:20px; z-index:100; margin-top:30px;">
                 <button id="start-btn" class="cta-btn" disabled>Select Player First</button>
             </div>
         </div>
-
     </div>
 
     <div style="position:fixed; bottom:20px; right:20px; z-index:100;">
@@ -106,36 +102,30 @@
         import { players } from './data.js';
         import { Auth } from './auth.js';
 
-        // --- SPLASH LOGIC ---
+        // Splash
         window.addEventListener('load', () => {
             const bar = document.getElementById('splash-bar');
             const screen = document.getElementById('splash-screen');
             setTimeout(() => { bar.style.width = "100%"; }, 100);
-            setTimeout(() => {
-                screen.style.opacity = '0';
-                setTimeout(() => { screen.style.display = 'none'; }, 500);
-            }, 2500);
+            setTimeout(() => { screen.style.opacity = '0'; setTimeout(() => { screen.style.display = 'none'; }, 500); }, 2500);
         });
 
-        // --- PWA SERVICE WORKER ---
+        // PWA
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').then(reg => console.log('PWA Active'));
-            });
+            window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js'); });
         }
 
-        // --- AUTH & LOBBY LOGIC ---
         const loginSection = document.getElementById('login-section');
         const lobbySection = document.getElementById('lobby-section');
         const list = document.getElementById('player-list');
         const startBtn = document.getElementById('start-btn');
         const loginBtn = document.getElementById('google-login-btn');
+        const balanceDisplay = document.getElementById('lobby-balance');
 
         let selectedPlayer = null;
 
-        // 1. Google Login Handler
         loginBtn.onclick = async () => {
-            loginBtn.innerHTML = "Connecting...";
+            loginBtn.innerHTML = "Authenticating...";
             try {
                 const user = await Auth.login();
                 if (user) {
@@ -146,16 +136,18 @@
                     document.getElementById('user-avatar').src = user.photo;
                     document.getElementById('user-avatar').style.display = "block";
                     
+                    // Update Wallet Balance from Server
+                    balanceDisplay.innerText = user.wallet ? user.wallet.balance : "100";
+                    
                     localStorage.setItem('CV_AuthToken', user.token);
                     renderPlayers();
                 }
             } catch (err) {
-                alert("Login Failed. Please try again.");
+                alert("Login Failed.");
                 loginBtn.innerHTML = "Sign In with Google";
             }
         };
 
-        // 2. Render Players from data.js
         function renderPlayers() {
             list.innerHTML = '';
             players.forEach(p => {
@@ -173,22 +165,16 @@
                     card.classList.add('selected');
                     startBtn.innerText = `PAY ₹${p.price} & ENTER`;
                     startBtn.disabled = false;
-                    startBtn.style.background = 'var(--accent-success)';
                 };
                 list.appendChild(card);
             });
         }
 
-        // 3. Start Match Handler
         startBtn.onclick = () => {
             if (!selectedPlayer) return;
-            startBtn.innerHTML = "INITIALIZING STADIUM...";
             localStorage.setItem('CV_CurrentPlayer', JSON.stringify(selectedPlayer));
-            setTimeout(() => {
-                window.location.href = 'game.html';
-            }, 800);
+            window.location.href = 'game.html';
         };
-
     </script>
 </body>
 </html>
