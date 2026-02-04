@@ -1,143 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CricVerse | Select Your Legend</title>
-    
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/1165/1165249.png">
-    <meta name="theme-color" content="#00f2ff">
-    <link rel="stylesheet" href="style.css">
-    
-    <style>
-        #splash-screen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #090919;
-            z-index: 9999;
-            display: flex; justify-content: center; align-items: center; text-align: center;
-            transition: opacity 0.5s;
+<script type="module">
+    import { players } from './data.js';
+    import { Auth } from './auth.js';
+
+    const loginBtn = document.getElementById('google-login-btn');
+
+    // Page load hote hi check karo login hoke aaya hai kya
+    window.addEventListener('load', async () => {
+        const user = await Auth.checkRedirect();
+        if (user) handleLoginSuccess(user);
+    });
+
+    loginBtn.onclick = async () => {
+        loginBtn.innerHTML = "Connecting...";
+        loginBtn.disabled = true;
+        
+        try {
+            const user = await Auth.login();
+            if (user) handleLoginSuccess(user);
+        } catch (err) {
+            // YE LINE SABSE IMPORTANT HAI - ERROR CODE DIKHAYEGI
+            alert("ASLI ERROR: " + err.code + "\nMESSAGE: " + err.message);
+            loginBtn.innerHTML = "SIGN IN WITH GOOGLE";
+            loginBtn.disabled = false;
         }
-        .splash-content { animation: fadeUp 1s ease-out; }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .hidden { display: none !important; }
-    </style>
-</head>
-<body>
+    };
 
-    <div id="splash-screen">
-        <div class="splash-content">
-            <div style="font-size:4rem; animation: bounce 2s infinite;">🏏</div>
-            <h1 style="color:#00f2ff; text-transform:uppercase; letter-spacing:4px; margin:10px 0;">CricVerse</h1>
-            <p style="color:#aaa; font-size:0.8rem;">POWERED BY AI NEURAL ENGINE</p>
-            <div style="width:200px; height:4px; background:#333; margin:20px auto; border-radius:2px; overflow:hidden;">
-                <div id="splash-bar" style="width:0%; height:100%; background:#00ff9d; transition:width 2.5s linear;"></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="app-container">
-        <header class="fade-in" style="position:relative;">
-            <div class="logo-text">CricVerse</div>
-            <div class="tagline">Real Match. Real Roles. Pure Experience.</div>
-            <a href="settings.html" style="position:absolute; top:5px; right:0; font-size:1.5rem; text-decoration:none; color:white;">⚙️</a>
-        </header>
-
-        <div id="login-section" class="card fade-in">
-            <h2 class="section-title">Identity Verification</h2>
-            <button id="google-login-btn" class="cta-btn" style="background:#fff; color:#333; display:flex; align-items:center; justify-content:center; gap:10px;">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20">
-                Sign In with Google
-            </button>
-        </div>
-
-        <div id="lobby-section" class="hidden fade-in">
-            <div class="card" style="padding:10px 15px; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <img id="user-avatar" src="" style="width:35px; height:35px; border-radius:50%; border:1px solid var(--primary); display:none; cursor:pointer;" onclick="window.location.href='profile.html'">
-                    <span id="user-name" style="font-weight:bold; color:var(--primary);">Guest</span>
-                </div>
-                <div onclick="window.location.href='wallet.html'" style="background:rgba(0,255,157,0.1); padding:5px 12px; border-radius:20px; color:#00ff9d; font-size:0.85rem; cursor:pointer; border:1px solid #00ff9d; display:flex; align-items:center; gap:5px;">
-                    ₹ <span id="lobby-balance">0</span> <span style="font-weight:bold; font-size:1rem;">+</span>
-                </div>
-            </div>
-            <div id="player-list" class="player-grid"></div>
-            <div style="position:sticky; bottom:20px; z-index:100; margin-top:30px;">
-                <button id="start-btn" class="cta-btn" disabled>Select Player First</button>
-            </div>
-        </div>
-    </div>
-
-    <script type="module">
-        import { players } from './data.js';
-        import { Auth } from './auth.js';
-
-        const loginSection = document.getElementById('login-section');
-        const lobbySection = document.getElementById('lobby-section');
-        const list = document.getElementById('player-list');
-        const startBtn = document.getElementById('start-btn');
-        const loginBtn = document.getElementById('google-login-btn');
-        const balanceDisplay = document.getElementById('lobby-balance');
-
-        // 1. SPLASH LOGIC
-        window.addEventListener('load', async () => {
-            const bar = document.getElementById('splash-bar');
-            const screen = document.getElementById('splash-screen');
-            setTimeout(() => { bar.style.width = "100%"; }, 100);
-            setTimeout(() => {
-                screen.style.opacity = '0';
-                setTimeout(() => { screen.style.display = 'none'; }, 500);
-            }, 2500);
-
-            // 2. CHECK REDIRECT RESULT (Hamesha check karega ki user login hoke aaya hai ya nahi)
-            try {
-                const user = await Auth.checkUser();
-                if (user) {
-                    handleLoginSuccess(user);
-                }
-            } catch (err) {
-                console.error("Auth check failed", err);
-            }
-        });
-
-        // 3. LOGIN CLICK
-        loginBtn.onclick = async () => {
-            loginBtn.innerHTML = "Redirecting to Google...";
-            loginBtn.disabled = true;
-            await Auth.login(); // auth.js se Redirect call hoga
-        };
-
-        function handleLoginSuccess(user) {
-            loginSection.classList.add('hidden');
-            lobbySection.classList.remove('hidden');
-            document.getElementById('user-name').innerText = user.name;
-            document.getElementById('user-avatar').src = user.photo;
-            document.getElementById('user-avatar').style.display = "block";
-            balanceDisplay.innerText = user.wallet ? user.wallet.balance : "100";
-            localStorage.setItem('CV_AuthToken', user.token);
-            renderPlayers();
-        }
-
-        function renderPlayers() {
-            list.innerHTML = '';
-            players.forEach(p => {
-                const card = document.createElement('div');
-                card.className = 'player-card';
-                card.innerHTML = `<div class="p-avatar">${p.avatar}</div><div class="p-name">${p.name}</div><div class="p-role">${p.role.toUpperCase()}</div><div class="p-price">Entry: ₹${p.price}</div>`;
-                card.onclick = () => {
-                    localStorage.setItem('CV_CurrentPlayer', JSON.stringify(p));
-                    document.querySelectorAll('.player-card').forEach(el => el.classList.remove('selected'));
-                    card.classList.add('selected');
-                    startBtn.innerText = `PAY ₹${p.price} & ENTER`;
-                    startBtn.disabled = false;
-                };
-                list.appendChild(card);
-            });
-        }
-
-        startBtn.onclick = () => { window.location.href = 'game.html'; };
-    </script>
-</body>
-</html>
+    function handleLoginSuccess(user) {
+        document.getElementById('login-section').classList.add('hidden');
+        document.getElementById('lobby-section').classList.remove('hidden');
+        document.getElementById('user-name').innerText = user.displayName;
+        document.getElementById('user-avatar').src = user.photoURL;
+        document.getElementById('user-avatar').style.display = "block";
+        localStorage.setItem('CV_AuthToken', user.accessToken);
+        renderPlayers(); // Apka purana function
+    }
+</script>
