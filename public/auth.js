@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBm5ShiliLe6yW_yg_t-rrIebtKyz0GAa8",
@@ -15,30 +15,27 @@ const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
 export const Auth = {
-    // 1. Sirf Redirect start karega
     login: async () => {
         try {
-            await signInWithRedirect(auth, provider);
+            // Pehle Popup try karega
+            const result = await signInWithPopup(auth, provider);
+            return result.user;
         } catch (error) {
-            console.error("Auth Error:", error.code);
-            alert("Error: " + error.code);
+            console.error("Popup Failed, trying redirect...", error.code);
+            // Agar popup block hai toh redirect karega
+            if (error.code === 'auth/popup-blocked' || error.code === 'auth/cancelled-popup-request') {
+                await signInWithRedirect(auth, provider);
+            } else {
+                throw error; // Baaki errors niche catch honge
+            }
         }
     },
-    // 2. Page wapis aane par user check karega
-    checkUser: async () => {
+    checkRedirect: async () => {
         try {
             const result = await getRedirectResult(auth);
-            if (result && result.user) {
-                return {
-                    uid: result.user.uid,
-                    name: result.user.displayName,
-                    photo: result.user.photoURL,
-                    token: result.user.accessToken
-                };
-            }
-            return null;
+            return result ? result.user : null;
         } catch (error) {
-            console.error("Redirect Result Error:", error);
+            console.error("Redirect Check Error", error);
             return null;
         }
     }
