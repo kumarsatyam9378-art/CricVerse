@@ -1,99 +1,56 @@
 /* =========================================
-   AUTHENTICATION MODULE (Production V1.0)
-   Service: Firebase Auth (Google Sign-In)
-   Config: Satyam Media Project
+   FIREBASE AUTHENTICATION ENGINE
    ========================================= */
 
-// 1. IMPORT FIREBASE SDKs (CDN)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { 
-    getAuth, 
-    GoogleAuthProvider, 
-    signInWithPopup, 
-    signOut, 
-    onAuthStateChanged 
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// 2. YOUR CONFIGURATION (Direct Integration)
+// 1. Aapka Config (Wahi rahega jo aapne diya tha)
 const firebaseConfig = {
-    apiKey: "AIzaSyDXpmQTDZgn_JvtgrEH3tVLzb-XyggLs_M",
-    authDomain: "midnight-library-satyam-media.firebaseapp.com",
-    projectId: "midnight-library-satyam-media",
-    appId: "1:842047619495:web:7483bc7e4a9029d6dc7682",
-    measurementId: "G-CGDLDBT4HH" // Analytics optional
+  apiKey: "AIzaSyBm5ShiliLe6yW_yg_t-rrIebtKyz0GAa8",
+  authDomain: "cricverse-fullstack.firebaseapp.com",
+  projectId: "cricverse-fullstack",
+  storageBucket: "cricverse-fullstack.firebasestorage.app",
+  messagingSenderId: "207572842183",
+  appId: "1:207572842183:web:e499e4259c7aff4b22f0e2",
+  measurementId: "G-WVV39756BF"
 };
 
-// 3. INITIALIZE APP
-let app;
-let auth;
-let provider;
+// 2. Powers (Initialization)
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+export const db = getFirestore(app); // Database access
+const provider = new GoogleAuthProvider();
 
-try {
-    app = initializeApp(firebaseConfig);
-    auth = getAuth(app);
-    provider = new GoogleAuthProvider();
-    console.log("🔥 Firebase Initialized Successfully");
-} catch (error) {
-    console.error("🔥 Firebase Init Error:", error);
-}
-
-// 4. AUTH FUNCTIONS EXPORT
+// 3. Login Function (Jo index.html se call hoga)
 export const Auth = {
-    /**
-     * Trigger Google Popup Login
-     * @returns {Promise<Object>} User Data
-     */
-    async login() {
-        if (!auth) return null;
+    login: async () => {
         try {
+            // Google Popup khulega
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
             
-            // Return simplified user object
+            console.log("Login Success:", user.displayName);
+
             return {
                 uid: user.uid,
                 name: user.displayName,
-                email: user.email,
                 photo: user.photoURL,
-                token: result._tokenResponse.idToken
+                email: user.email,
+                token: user.accessToken
             };
         } catch (error) {
-            console.error("Login Failed:", error.message);
-            throw error;
-        }
-    },
-
-    /**
-     * Logout User
-     */
-    async logout() {
-        if (!auth) return;
-        try {
-            await signOut(auth);
-            console.log("User Signed Out");
-            window.location.reload(); // Refresh to reset state
-        } catch (error) {
-            console.error("Logout Error:", error);
-        }
-    },
-
-    /**
-     * Listen to Auth State Changes (Auto-Login check)
-     * @param {Function} callback - Function to run on state change
-     */
-    onStateChange(callback) {
-        if (!auth) return;
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                callback({
-                    uid: user.uid,
-                    name: user.displayName,
-                    photo: user.photoURL,
-                    isLogged: true
-                });
+            console.error("Auth Error Code:", error.code);
+            
+            if (error.code === 'auth/unauthorized-domain') {
+                alert("Domain Error: Firebase Console > Authentication > Settings > Authorized Domains mein jaakar apna link add karo!");
+            } else if (error.code === 'auth/popup-closed-by-user') {
+                alert("Aapne login window band kar di!");
             } else {
-                callback({ isLogged: false });
+                alert("Login Failed: " + error.message);
             }
-        });
+            return null;
+        }
     }
 };
