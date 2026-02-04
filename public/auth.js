@@ -1,8 +1,5 @@
-/* =========================================
-   FIREBASE AUTH (REVISED FOR VERCEL)
-   ========================================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBm5ShiliLe6yW_yg_t-rrIebtKyz0GAa8",
@@ -18,20 +15,30 @@ const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
 export const Auth = {
+    // 1. Sirf Redirect start karega
     login: async () => {
         try {
-            // Force Popup
-            provider.setCustomParameters({ prompt: 'select_account' });
-            const result = await signInWithPopup(auth, provider);
-            return {
-                uid: result.user.uid,
-                name: result.user.displayName,
-                photo: result.user.photoURL,
-                token: result.user.accessToken
-            };
+            await signInWithRedirect(auth, provider);
         } catch (error) {
-            console.error("DEBUG ERROR:", error.code);
-            alert("Error: " + error.code); // Isse humein asli wajah pata chalegi
+            console.error("Auth Error:", error.code);
+            alert("Error: " + error.code);
+        }
+    },
+    // 2. Page wapis aane par user check karega
+    checkUser: async () => {
+        try {
+            const result = await getRedirectResult(auth);
+            if (result && result.user) {
+                return {
+                    uid: result.user.uid,
+                    name: result.user.displayName,
+                    photo: result.user.photoURL,
+                    token: result.user.accessToken
+                };
+            }
+            return null;
+        } catch (error) {
+            console.error("Redirect Result Error:", error);
             return null;
         }
     }
