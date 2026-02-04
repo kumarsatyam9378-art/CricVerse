@@ -6,6 +6,7 @@
     <title>CricVerse | Select Your Legend</title>
     
     <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/1165/1165249.png">
     <meta name="theme-color" content="#00f2ff">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1165/1165249.png">
 
@@ -56,7 +57,7 @@
         <header class="fade-in" style="position:relative;">
             <div class="logo-text">CricVerse</div>
             <div class="tagline">Real Match. Real Roles. Pure Experience.</div>
-            <a href="settings.html" style="position:absolute; top:5px; right:0; font-size:1.5rem; text-decoration:none;">⚙️</a>
+            <a href="settings.html" style="position:absolute; top:5px; right:0; font-size:1.5rem; text-decoration:none; color:white;">⚙️</a>
         </header>
 
         <div id="login-section" class="card fade-in">
@@ -84,6 +85,12 @@
                 </div>
             </div>
 
+            <div style="text-align:center; margin-bottom:20px;">
+                <button onclick="window.location.href='social.html'" style="background:transparent; border:1px solid var(--text-muted); color:var(--text-muted); padding:8px 15px; border-radius:20px; font-size:0.8rem; cursor:pointer;">
+                    💬 Enter Pavilion (Global Chat)
+                </button>
+            </div>
+
             <div class="section-title">SELECT YOUR LEGEND</div>
             
             <div id="player-list" class="player-grid"></div>
@@ -92,6 +99,13 @@
                 <button id="start-btn" class="cta-btn" disabled>Select Player First</button>
             </div>
         </div>
+
+        <div style="text-align:center; margin-top:20px; font-size:0.7rem; color:#666;">
+            <a href="rules.html" style="color:#888; text-decoration:none;">How to Play</a> • 
+            <a href="admin.html" style="color:#888; text-decoration:none;">Admin</a> • 
+            <a href="legal.html" style="color:#888; text-decoration:none;">Terms</a>
+        </div>
+        <br>
     </div>
 
     <div style="position:fixed; bottom:20px; right:20px; z-index:100;">
@@ -102,7 +116,7 @@
         import { players } from './data.js';
         import { Auth } from './auth.js';
 
-        // Splash
+        // Splash Logic
         window.addEventListener('load', () => {
             const bar = document.getElementById('splash-bar');
             const screen = document.getElementById('splash-screen');
@@ -110,7 +124,7 @@
             setTimeout(() => { screen.style.opacity = '0'; setTimeout(() => { screen.style.display = 'none'; }, 500); }, 2500);
         });
 
-        // PWA
+        // PWA Registration
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js'); });
         }
@@ -136,7 +150,7 @@
                     document.getElementById('user-avatar').src = user.photo;
                     document.getElementById('user-avatar').style.display = "block";
                     
-                    // Update Wallet Balance from Server
+                    // Update Balance
                     balanceDisplay.innerText = user.wallet ? user.wallet.balance : "100";
                     
                     localStorage.setItem('CV_AuthToken', user.token);
