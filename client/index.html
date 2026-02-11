@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CricVerse 3D Cricket</title>
+  </head>
+  <body>
+    <div id="app">
+      <aside class="hud">
+        <h1>CricVerse 3D Cricket</h1>
+
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="play">Play</button>
+          <button class="tab-btn" data-tab="shop">Shop</button>
+          <button class="tab-btn" data-tab="settings">Settings</button>
+        </div>
+
+        <section class="tab-panel active" id="panel-play">
+          <p id="status">Tap Start Match to begin.</p>
+          <div class="scoreboard">
+            <span>Innings: <strong id="innings">1</strong>/2</span>
+            <span>Runs: <strong id="score">0</strong>/<strong id="wickets">0</strong></span>
+            <span>Overs: <strong id="overs">0.0</strong></span>
+            <span>Target: <strong id="target">-</strong></span>
+            <span>Mode: <strong id="mode">Batting</strong></span>
+            <span>Last Ball: <strong id="last-ball">-</strong></span>
+          </div>
+          <div class="actions">
+            <button id="start-btn">Start Match</button>
+            <button id="next-ball-btn">Next Ball</button>
+            <button id="reset-btn">Reset</button>
+          </div>
+        </section>
+
+        <section class="tab-panel" id="panel-shop">
+          <p class="sub">Equip upgrades (prototype inventory only):</p>
+          <ul class="shop-list">
+            <li>⚡ Power Bat (+timing forgiveness)</li>
+            <li>🎯 Seam Ball (+swing control)</li>
+            <li>🏟️ Night Stadium Skin</li>
+          </ul>
+          <button class="ghost">Unlock Soon</button>
+        </section>
+
+        <section class="tab-panel" id="panel-settings">
+          <label>Player Role
+            <select id="role-select">
+              <option value="bat">Batting First</option>
+              <option value="bowl">Bowling First</option>
+            </select>
+          </label>
+          <label>Overs
+            <select id="overs-select">
+              <option value="1">1 Over</option>
+              <option value="2" selected>2 Overs</option>
+              <option value="5">5 Overs</option>
+            </select>
+          </label>
+          <label>Difficulty
+            <select id="difficulty-select">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </label>
+          <label>Camera Height
+            <input id="camera-slider" type="range" min="7" max="18" value="11" />
+          </label>
+          <label class="inline"><input id="sound-toggle" type="checkbox" checked /> Sound</label>
+          <label class="inline"><input id="vibe-toggle" type="checkbox" checked /> Vibration</label>
+          <label class="inline"><input id="quality-toggle" type="checkbox" checked /> High Quality</label>
+        </section>
+
+        <div class="touch-controls">
+          <button id="shot-left">Leg Shot</button>
+          <button id="shot-straight">Straight</button>
+          <button id="shot-right">Off Shot</button>
+          <button id="bowl-btn">Bowl</button>
+        </div>
+      </aside>
+
+      <canvas id="game-canvas"></canvas>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
