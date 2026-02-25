@@ -69,10 +69,15 @@ app.post('/api/simulate/match', (req, res) => {
   });
 });
 
-app.get(/.*/ , (_req, res) => {
+app.get(/.*/, (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`🏏 CricVerse ready at http://localhost:${PORT}`);
-});
+const isDirectRun = process.argv[1] && __filename === path.resolve(process.argv[1]);
+if (isDirectRun) {
+  app.listen(PORT, () => {
+    console.log(`🏏 CricVerse ready at http://localhost:${PORT}`);
+  });
+}
+
+export default app;
