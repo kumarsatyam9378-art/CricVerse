@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CricVerse Real Match Simulator</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <h1>🏏 CricVerse - Ready to Deploy Simulator</h1>
+      <p>Offline + online-ready cricket match simulation (T20 / ODI / Test).</p>
+
+      <section class="controls">
+        <label>Format
+          <select id="format">
+            <option value="t20">T20</option>
+            <option value="odi">ODI</option>
+            <option value="test">Test</option>
+          </select>
+        </label>
+
+        <label>Pitch
+          <select id="pitchType">
+            <option value="balanced">Balanced</option>
+            <option value="green">Green</option>
+            <option value="dusty">Dusty</option>
+            <option value="flat">Flat</option>
+            <option value="hard">Hard</option>
+          </select>
+        </label>
+
+        <label>Weather
+          <select id="weather">
+            <option value="clear">Clear</option>
+            <option value="cloudy">Cloudy</option>
+            <option value="humid">Humid</option>
+            <option value="dry">Dry</option>
+            <option value="windy">Windy</option>
+          </select>
+        </label>
+
+        <label>Seed
+          <input id="seed" type="number" value="42" />
+        </label>
+
+        <button id="simulateBtn">Simulate Match</button>
+      </section>
+
+      <section class="card">
+        <h2>Match Result</h2>
+        <pre id="result">Click "Simulate Match"</pre>
+      </section>
+
+      <section class="card">
+        <h2>Ball Trail (sample telemetry)</h2>
+        <canvas id="trajectory" width="860" height="280"></canvas>
+      </section>
+    </main>
+
+    <script type="module" src="/game.js"></script>
+  </body>
+</html>
