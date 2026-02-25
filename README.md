@@ -50,3 +50,11 @@ Works on Render / Railway / Fly / VPS:
 
 - Start command: `npm start`
 - Port: environment variable `PORT`
+## Folder Structure (Important)
+
+Recommended scalable structure is added here:
+
+- `docs/PROJECT_STRUCTURE.md`
+
+If you asked "structure kya rakhna hai", start from that file and build modules in `client/src` + `server/src` folders now present in repo.
+
