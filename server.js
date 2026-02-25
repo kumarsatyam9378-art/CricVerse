@@ -1,47 +1,83 @@
-/* =========================================
-   CRICVERSE BACKEND SERVER (Node.js)
-   Handles: Static Asset Serving, Routing, Security
-   ========================================= */
+import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { createConditions, sampleTeams, simulateMatch } from './simulation/engine.js';
 
-const express = require('express');
-const path = require('path');
-const cors = require('cors');
-const helmet = require('helmet');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT || 3000);
 
-// 1. SECURITY MIDDLEWARE
-app.use(helmet({
-    contentSecurityPolicy: {
-        directives: {
-            defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "https://www.gstatic.com"], // Allow Firebase
-            imgSrc: ["'self'", "data:", "https://pollinations.ai", "https://cdn-icons-png.flaticon.com", "https://ui-avatars.com", "https://lh3.googleusercontent.com"], // Allow AI Images & Google Profile
-            connectSrc: ["'self'", "https://pollinations.ai", "https://identitytoolkit.googleapis.com", "https://securetoken.googleapis.com"], // Allow API calls
-        },
-    },
-}));
-
-app.use(cors());
-
-// 2. SERVE STATIC FILES (From 'public' folder)
+app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 3. ROUTE HANDLING
-// Redirect root to index.html explicitly (optional, express.static does this usually)
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+app.get('/health', (_req, res) => {
+  res.json({ ok: true, service: 'cricverse-real-simulator' });
 });
 
-// Fallback for any other route (SPA behavior) - Redirects to Home
-app.get('*', (req, res) => {
-    res.redirect('/');
+app.post('/api/simulate/match', (req, res) => {
+  const {
+    format = 't20',
+    teamA = sampleTeams.teamA,
+    teamB = sampleTeams.teamB,
+    pitchType = 'balanced',
+    weather = 'clear',
+    airDensity = 1.2,
+    wind = 0,
+    seed,
+  } = req.body || {};
+
+  const conditions = createConditions({ pitchType, weather, airDensity, wind });
+  const result = simulateMatch({ format, teamA, teamB, conditions, seed });
+
+  if (format === 'test') {
+    return res.json({
+      summary: {
+        format: result.format,
+        winner: result.winner,
+        marginRuns: result.marginRuns,
+        innings: result.innings.map((i) => ({
+          team: i.team,
+          runs: i.runs,
+          wickets: i.wickets,
+          ballsBowled: i.ballsBowled,
+        })),
+      },
+      telemetrySample: result.innings[0].balls.slice(0, 24).map((b) => b.telemetry),
+    });
+  }
+
+  return res.json({
+    summary: {
+      format: result.format,
+      winner: result.winner,
+      firstInnings: {
+        team: result.firstInnings.team,
+        runs: result.firstInnings.runs,
+        wickets: result.firstInnings.wickets,
+        ballsBowled: result.firstInnings.ballsBowled,
+      },
+      secondInnings: {
+        team: result.secondInnings.team,
+        runs: result.secondInnings.runs,
+        wickets: result.secondInnings.wickets,
+        ballsBowled: result.secondInnings.ballsBowled,
+      },
+    },
+    telemetrySample: result.firstInnings.balls.slice(0, 24).map((b) => b.telemetry),
+  });
 });
 
-// 4. START SERVER
-app.listen(PORT, () => {
-    console.log(`\n🏏 CRICVERSE STADIUM IS LIVE!`);
-    console.log(`⚡ Server running on port: ${PORT}`);
-    console.log(`👉 Open http://localhost:${PORT} to play\n`);
+app.get(/.*/, (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
+const isDirectRun = process.argv[1] && __filename === path.resolve(process.argv[1]);
+if (isDirectRun) {
+  app.listen(PORT, () => {
+    console.log(`🏏 CricVerse ready at http://localhost:${PORT}`);
+  });
+}
+
+export default app;
